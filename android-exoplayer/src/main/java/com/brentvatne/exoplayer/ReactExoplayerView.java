@@ -3,12 +3,15 @@ package com.brentvatne.exoplayer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.accessibility.CaptioningManager;
@@ -58,6 +61,7 @@ import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
@@ -108,6 +112,7 @@ class ReactExoplayerView extends FrameLayout implements
     private SimpleExoPlayer player;
     private DefaultTrackSelector trackSelector;
     private boolean playerNeedsSource;
+    private boolean isPlayerPlaying;
 
     private int resumeWindow;
     private long resumePosition;
@@ -171,6 +176,7 @@ class ReactExoplayerView extends FrameLayout implements
             }
         }
     };
+
 
     public ReactExoplayerView(ThemedReactContext context) {
         super(context);
@@ -307,8 +313,21 @@ class ReactExoplayerView extends FrameLayout implements
                 player.removeListener(eventListener);
             }
         };
+
+        playerControlView.findViewById(R.id.exo_fullscreen_icon).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), FullscreenVideoActivity.class);
+                intent.putExtra(ReactExoplayerViewManager.EXTRA_VIDEO_URI, srcUri.toString());
+                Activity currentActivity = themedReactContext.getCurrentActivity();
+                currentActivity.startActivity(intent);
+            }
+        });
+
         player.addListener(eventListener);
     }
+
+
 
     /**
      * Adding Player control to the frame layout
@@ -450,7 +469,7 @@ class ReactExoplayerView extends FrameLayout implements
         return new SingleSampleMediaSource(uri, mediaDataSourceFactory, textFormat, C.TIME_UNSET);
     }
 
-    private void releasePlayer() {
+    public void releasePlayer() {
         if (player != null) {
             updateResumePosition();
             player.release();
@@ -463,6 +482,37 @@ class ReactExoplayerView extends FrameLayout implements
         audioBecomingNoisyReceiver.removeListener();
         BANDWIDTH_METER.removeEventListener(this);
     }
+
+    public void goToBackground(){
+        if(player != null){
+            player.setPlayWhenReady(false);
+            player.clearVideoSurface();
+            player.setVideoTextureView((TextureView) exoPlayerView.getVideoSurfaceView());
+            player.seekTo(player.getCurrentPosition() + 1);
+            exoPlayerView.setPlayer(player);
+        }
+    }
+
+    public void goToForeground(){
+        if(player != null){
+            player.setPlayWhenReady(true);
+        }
+    }
+
+    public void prepareExoPlayer(Context context, PlayerView exoPlayerViewRef) {
+        if (context == null || exoPlayerViewRef == null) {
+            return;
+        }
+        if (player == null) {
+            initializePlayer();
+        }
+        player.clearVideoSurface();
+        player.setVideoSurfaceView((SurfaceView) exoPlayerViewRef.getVideoSurfaceView());
+        player.seekTo(player.getCurrentPosition() + 1);
+        exoPlayerViewRef.setPlayer(player);
+    }
+
+//    private void setProperSurface(PlayerView)
 
     private boolean requestAudioFocus() {
         if (disableFocus || srcUri == null) {

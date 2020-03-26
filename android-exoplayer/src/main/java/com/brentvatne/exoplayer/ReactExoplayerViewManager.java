@@ -70,6 +70,16 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
         return new ReactExoplayerView(themedReactContext);
     }
 
+    public static final String EXTRA_VIDEO_URI = "video_uri";
+
+    private static Map<String, ReactExoplayerView> instances = new HashMap<>();
+
+    public static ReactExoplayerView getInstance(String videoUri) {
+        ReactExoplayerView instance = instances.get(videoUri);
+        //TODO : Throw error if instance is null or initialize new player
+        return instance;
+    }
+
     @Override
     public void onDropViewInstance(ReactExoplayerView view) {
         view.cleanUpResources();
@@ -111,6 +121,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
 
             if (srcUri != null) {
                 videoView.setSrc(srcUri, extension, headers);
+                instances.put(srcUri.toString(), videoView);
             }
         } else {
             int identifier = context.getResources().getIdentifier(
@@ -129,6 +140,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
                 Uri srcUri = RawResourceDataSource.buildRawResourceUri(identifier);
                 if (srcUri != null) {
                     videoView.setRawSrc(srcUri, extension);
+                    instances.put(srcUri.toString(), videoView);
                 }
             }
         }
