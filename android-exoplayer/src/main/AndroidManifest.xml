@@ -1,12 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.brentvatne.react">
-    <application
-      android:name=".MainApplication"
-      android:label="@string/app_name"
-      android:icon="@mipmap/ic_launcher"
-      android:roundIcon="@mipmap/ic_launcher_round"
-      android:allowBackup="false"
-      android:theme="@style/AppTheme">
+    <application>
         <activity
         android:name="com.brentvatne.exoplayer.FullscreenVideoActivity"
         android:configChanges="orientation|keyboardHidden|screenSize"
