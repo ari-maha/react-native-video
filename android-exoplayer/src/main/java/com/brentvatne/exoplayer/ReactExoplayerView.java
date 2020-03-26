@@ -485,11 +485,11 @@ class ReactExoplayerView extends FrameLayout implements
 
     public void goToBackground(){
         if(player != null){
-            player.setPlayWhenReady(false);
             player.clearVideoSurface();
             player.setVideoTextureView((TextureView) exoPlayerView.getVideoSurfaceView());
             player.seekTo(player.getCurrentPosition() + 1);
             exoPlayerView.setPlayer(player);
+            player.setPlayWhenReady(true);
         }
     }
 
