@@ -46,7 +46,7 @@ public class FullscreenVideoActivity extends AppCompatActivity {
         }
     };
 
-    private String mVideoUri;
+    private String mPlayerId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,7 +54,7 @@ public class FullscreenVideoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fullscreen_video);
 
         mContentView = findViewById(R.id.enclosing_layout);
-        mVideoUri = getIntent().getStringExtra(ReactExoplayerViewManager.EXTRA_VIDEO_URI);
+        mPlayerId = getIntent().getStringExtra(ReactExoplayerViewManager.PLAYER_UUID);
 
         PlayerView playerView = findViewById(R.id.player_view);
         // Set the fullscreen button to "close fullscreen" icon
@@ -75,7 +75,7 @@ public class FullscreenVideoActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         PlayerView playerView = findViewById(R.id.player_view);
-        ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mVideoUri);
+        ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mPlayerId);
         reactExoplayerView.prepareExoPlayer(this, playerView);
         reactExoplayerView.goToForeground();
     }
@@ -84,12 +84,12 @@ public class FullscreenVideoActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         if (Util.SDK_INT >= 24 && isInPictureInPictureMode()) {
-            ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mVideoUri);
+            ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mPlayerId);
             reactExoplayerView.setControls(false);
             reactExoplayerView.setPausedModifier(false);
         }
         else {
-            ReactExoplayerViewManager.getInstance(mVideoUri).goToBackground();
+            ReactExoplayerViewManager.getInstance(mPlayerId).goToBackground();
         }
     }
 
@@ -118,7 +118,7 @@ public class FullscreenVideoActivity extends AppCompatActivity {
 
     @Override
     public void onPictureInPictureModeChanged (boolean isInPictureInPictureMode, Configuration newConfig) {
-        ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mVideoUri);
+        ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mPlayerId);
         if (isInPictureInPictureMode) {
             reactExoplayerView.setControls(false);
         }

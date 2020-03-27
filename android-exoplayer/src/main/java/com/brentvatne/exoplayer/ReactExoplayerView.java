@@ -78,6 +78,7 @@ import java.util.Map;
 import java.lang.Object;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.UUID;
 
 @SuppressLint("ViewConstructor")
 class ReactExoplayerView extends FrameLayout implements
@@ -156,6 +157,8 @@ class ReactExoplayerView extends FrameLayout implements
     private final ThemedReactContext themedReactContext;
     private final AudioManager audioManager;
     private final AudioBecomingNoisyReceiver audioBecomingNoisyReceiver;
+
+    private final String playerUUID = UUID.randomUUID().toString();
 
     private final Handler progressHandler = new Handler() {
         @Override
@@ -487,7 +490,7 @@ class ReactExoplayerView extends FrameLayout implements
             player.setVideoTextureView((TextureView) exoPlayerView.getVideoSurfaceView());
             player.seekTo(player.getCurrentPosition() + 1);
             exoPlayerView.setPlayer(player);
-            player.setPlayWhenReady(true);
+            player.setPlayWhenReady(false);
             eventEmitter.fullscreenDidDismiss();
         }
     }
@@ -1174,7 +1177,7 @@ class ReactExoplayerView extends FrameLayout implements
 
     public void showFullScreen() {
         Intent intent = new Intent(getContext(), FullscreenVideoActivity.class);
-        intent.putExtra(ReactExoplayerViewManager.EXTRA_VIDEO_URI, srcUri.toString());
+        intent.putExtra(ReactExoplayerViewManager.PLAYER_UUID, getPlayerUUID());
         Activity currentActivity = themedReactContext.getCurrentActivity();
         currentActivity.startActivity(intent);
     }
@@ -1245,5 +1248,9 @@ class ReactExoplayerView extends FrameLayout implements
                 removeViewAt(indexOfPC);
             }
         }
+    }
+
+    public String getPlayerUUID() {
+        return playerUUID;
     }
 }
