@@ -317,10 +317,7 @@ class ReactExoplayerView extends FrameLayout implements
         playerControlView.findViewById(R.id.exo_fullscreen_icon).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getContext(), FullscreenVideoActivity.class);
-                intent.putExtra(ReactExoplayerViewManager.EXTRA_VIDEO_URI, srcUri.toString());
-                Activity currentActivity = themedReactContext.getCurrentActivity();
-                currentActivity.startActivity(intent);
+                showFullScreen();
             }
         });
 
@@ -485,11 +482,13 @@ class ReactExoplayerView extends FrameLayout implements
 
     public void goToBackground(){
         if(player != null){
+            eventEmitter.fullscreenWillDismiss();
             player.clearVideoSurface();
             player.setVideoTextureView((TextureView) exoPlayerView.getVideoSurfaceView());
             player.seekTo(player.getCurrentPosition() + 1);
             exoPlayerView.setPlayer(player);
             player.setPlayWhenReady(true);
+            eventEmitter.fullscreenDidDismiss();
         }
     }
 
@@ -506,10 +505,12 @@ class ReactExoplayerView extends FrameLayout implements
         if (player == null) {
             initializePlayer();
         }
+        eventEmitter.fullscreenWillPresent();
         player.clearVideoSurface();
         player.setVideoSurfaceView((SurfaceView) exoPlayerViewRef.getVideoSurfaceView());
         player.seekTo(player.getCurrentPosition() + 1);
         exoPlayerViewRef.setPlayer(player);
+        eventEmitter.fullscreenDidPresent();
     }
 
 //    private void setProperSurface(PlayerView)
@@ -1169,6 +1170,13 @@ class ReactExoplayerView extends FrameLayout implements
 
     public void setDisableFocus(boolean disableFocus) {
         this.disableFocus = disableFocus;
+    }
+
+    public void showFullScreen() {
+        Intent intent = new Intent(getContext(), FullscreenVideoActivity.class);
+        intent.putExtra(ReactExoplayerViewManager.EXTRA_VIDEO_URI, srcUri.toString());
+        Activity currentActivity = themedReactContext.getCurrentActivity();
+        currentActivity.startActivity(intent);
     }
 
     public void setFullscreen(boolean fullscreen) {
