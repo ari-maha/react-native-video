@@ -1,6 +1,7 @@
 package com.brentvatne.exoplayer;
 
 import android.annotation.SuppressLint;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 
 import com.brentvatne.react.R;
 import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.util.Util;
 
 // Fullscreen related code taken from Android Studio blueprint
 public class FullscreenVideoActivity extends AppCompatActivity {
@@ -49,16 +51,12 @@ public class FullscreenVideoActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_fullscreen_video);
 
         mContentView = findViewById(R.id.enclosing_layout);
-        PlayerView playerView = findViewById(R.id.player_view);
-
         mVideoUri = getIntent().getStringExtra(ReactExoplayerViewManager.EXTRA_VIDEO_URI);
-        ReactExoplayerViewManager.getInstance(mVideoUri)
-                .prepareExoPlayer(this, playerView);
 
+        PlayerView playerView = findViewById(R.id.player_view);
         // Set the fullscreen button to "close fullscreen" icon
         ImageView fullscreenIcon = playerView.findViewById(R.id.exo_fullscreen_icon);
         fullscreenIcon.setImageResource(R.drawable.ic_fullscreen_close);
@@ -70,28 +68,65 @@ public class FullscreenVideoActivity extends AppCompatActivity {
                     finish();
                 }
             });
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        ReactExoplayerViewManager.getInstance(mVideoUri).goToForeground();
+        PlayerView playerView = findViewById(R.id.player_view);
+        ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mVideoUri);
+        reactExoplayerView.prepareExoPlayer(this, playerView);
+        reactExoplayerView.goToForeground();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        ReactExoplayerViewManager.getInstance(mVideoUri).goToBackground();
+        if (Util.SDK_INT >= 24 && isInPictureInPictureMode()) {
+            ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mVideoUri);
+            reactExoplayerView.setControls(false);
+            reactExoplayerView.setPausedModifier(false);
+        }
+        else {
+            ReactExoplayerViewManager.getInstance(mVideoUri).goToBackground();
+        }
+    }
+
+    @Override
+    public void onPostResume() {
+        super.onPostResume();
+        // Trigger the initial hide() shortly after the activity has been
+        // created, to briefly hint to the user that UI controls
+        // are available.
+        delayedHide();
     }
 
     @Override
     public void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+    }
 
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide();
+
+
+    @Override
+    public void onUserLeaveHint () {
+        if (Util.SDK_INT >= 24) {
+            enterPictureInPictureMode();
+        }
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged (boolean isInPictureInPictureMode, Configuration newConfig) {
+        ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mVideoUri);
+        if (isInPictureInPictureMode) {
+            reactExoplayerView.setControls(false);
+        }
+        else {
+            reactExoplayerView.setControls(true);
+            finish();
+            startActivity(getIntent());
+        }
     }
 
     private void hide() {
