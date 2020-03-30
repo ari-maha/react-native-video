@@ -151,6 +151,7 @@ class ReactExoplayerView extends FrameLayout implements
     private Map<String, String> requestHeaders;
     private boolean mReportBandwidth = false;
     private boolean controls;
+    private boolean enablePIP = false;
     // \ End props
 
     // React
@@ -1252,5 +1253,13 @@ class ReactExoplayerView extends FrameLayout implements
 
     public String getPlayerUUID() {
         return playerUUID;
+    }
+
+    public boolean isEnablePIP() {
+        return enablePIP;
+    }
+
+    public void setEnablePIP(boolean enablePIP) {
+        this.enablePIP = enablePIP;
     }
 }

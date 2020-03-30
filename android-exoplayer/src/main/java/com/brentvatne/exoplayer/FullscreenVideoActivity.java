@@ -47,6 +47,7 @@ public class FullscreenVideoActivity extends AppCompatActivity {
     };
 
     private String mPlayerId;
+    private boolean enablePIP = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -78,6 +79,7 @@ public class FullscreenVideoActivity extends AppCompatActivity {
         ReactExoplayerView reactExoplayerView = ReactExoplayerViewManager.getInstance(mPlayerId);
         reactExoplayerView.prepareExoPlayer(this, playerView);
         reactExoplayerView.goToForeground();
+        enablePIP = reactExoplayerView.isEnablePIP();
     }
 
     @Override
@@ -111,7 +113,7 @@ public class FullscreenVideoActivity extends AppCompatActivity {
 
     @Override
     public void onUserLeaveHint () {
-        if (Util.SDK_INT >= 24) {
+        if (enablePIP && Util.SDK_INT >= 24) {
             enterPictureInPictureMode();
         }
     }
